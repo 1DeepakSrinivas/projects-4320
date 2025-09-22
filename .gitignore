@@ -1,0 +1,45 @@
+# Object files
+*.o
+*.obj
+
+# Libraries
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.elf
+
+# Build directories
+/build/
+/bin/
+/obj/
+
+# Compressed files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Editor/OS files
+*~
+*.swp
+.DS_Store
+Thumbs.db
+
+# IDE/project files
+.vscode/
+.idea/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+
+# Project Documentation
+RoyaHosseini-Operating Systems Project-Fall25 - 1.pdf
