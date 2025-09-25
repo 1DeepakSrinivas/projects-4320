@@ -3,12 +3,12 @@
  * CSC 4320 Operating Systems
  * Project 1: Process Scheduling Simulation
  * 9/25/2025
- 
+
  * Shortest Job First (SJF) scheduling algorithm
 
  * The SJF algorithm selects the process with the shortest burst time to run next.
  * This is a non-preemptive algorithm where once a process starts execution, it runs to completion.
- 
+
  * Input: processes.txt containing process information in format: process_id arrival_time burst_time
  * Output: Execution sequence, waiting time, and turnaround time for each process
  */
@@ -86,6 +86,7 @@ int read_processes_from_file(const char *filename, Process processes[])
 
 void sjf_(Process processes[], int n)
 {
+    if (n <= 0) return; // No processes to schedule
     int current_time = 0;
     int completed_processes = 0;
 
@@ -100,7 +101,16 @@ void sjf_(Process processes[], int n)
         {
             if (processes[i].arrival_time <= current_time && !processes[i].is_completed)
             {
+                // If this process has a shorter burst time than the current shortest select it.
                 if (processes[i].burst_time < shortest_burst)
+                {
+                    shortest_burst = processes[i].burst_time;
+                    shortest_job_index = i;
+                }
+                // If two processes have the same burst time, choose the one that arrived first.
+                if (processes[i].burst_time < shortest_burst ||
+                    (processes[i].burst_time == shortest_burst &&
+                     processes[i].arrival_time < processes[shortest_job_index].arrival_time))
                 {
                     shortest_burst = processes[i].burst_time;
                     shortest_job_index = i;
@@ -126,9 +136,21 @@ void sjf_(Process processes[], int n)
         }
         else
         {
-            // If no process has arrived yet, the CPU is idle.
-            // Advancing the clock by one time unit.
-            current_time++;
+            // Find the earliest arrival time of unstarted processes
+            int next_arrival = INT_MAX;
+            for (int i = 0; i < n; i++)
+            {
+                if (!processes[i].is_completed && processes[i].arrival_time > current_time)
+                {
+                    if (processes[i].arrival_time < next_arrival)
+                        next_arrival = processes[i].arrival_time;
+                }
+            }
+
+            if (next_arrival != INT_MAX)
+                current_time = next_arrival;
+            else
+                current_time++; // Fallback
         }
     }
 }
