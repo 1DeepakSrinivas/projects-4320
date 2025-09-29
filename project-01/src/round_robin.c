@@ -259,7 +259,7 @@ int main()
 
     printf("--- Round Robin (RR) Scheduling (Time Quantum = %d) ---\n", TIME_QUANTUM);
 
-    rr_(processes, n, gantt, &gantt_count);
+    round_robin(processes, n, gantt, &gantt_count);
 
     print_gantt_chart(gantt, gantt_count);
     print_results(processes, n);
