@@ -19,6 +19,7 @@
 #include <limits.h>
 
 #define MAX_PROCESSES 100
+#define MAX_GANTT_ENTRIES 200
 
 // Process struct
 typedef struct
@@ -35,9 +36,18 @@ typedef struct
     bool is_completed;
 } Process;
 
+// Gantt chart entry struct
+typedef struct
+{
+    int process_id;
+    int start_time;
+    int end_time;
+} GanttEntry;
+
 // Function prototypes
 int read_processes_from_file(const char *filename, Process processes[]);
-void sjf_(Process processes[], int n);
+void sjf_(Process processes[], int n, GanttEntry gantt[], int *gantt_count);
+void gantt_chart(GanttEntry gantt[], int gantt_count);
 void print_results(Process processes[], int n);
 
 /**
@@ -82,13 +92,16 @@ int read_processes_from_file(const char *filename, Process processes[])
 
 /**
  * Simulates the SJF algorithm, calculating completion, turnaround, and waiting times.
+ * Also builds the Gantt chart for visualization.
  */
 
-void sjf_(Process processes[], int n)
+void sjf_(Process processes[], int n, GanttEntry gantt[], int *gantt_count)
 {
-    if (n <= 0) return; // No processes to schedule
+    if (n <= 0)
+        return; // No processes to schedule
     int current_time = 0;
     int completed_processes = 0;
+    *gantt_count = 0;
 
     // The main loop continues until all processes are completed.
     while (completed_processes < n)
@@ -123,6 +136,12 @@ void sjf_(Process processes[], int n)
         {
             Process *p = &processes[shortest_job_index];
 
+            // Record Gantt chart entry
+            gantt[*gantt_count].process_id = p->id;
+            gantt[*gantt_count].start_time = current_time;
+            gantt[*gantt_count].end_time = current_time + p->burst_time;
+            (*gantt_count)++;
+
             // Advance time by the burst time of the chosen process.
             current_time += p->burst_time;
 
@@ -155,9 +174,30 @@ void sjf_(Process processes[], int n)
     }
 }
 
-/**
- * Prints the final results, including a table and average times.
- */
+// Prints the Gantt chart showing process execution order
+
+void gantt_chart(GanttEntry gantt[], int gantt_count)
+{
+    printf("\nGantt Chart:\n");
+
+    // Print the process names
+    printf("|");
+    for (int i = 0; i < gantt_count; i++)
+    {
+        printf(" P%d |", gantt[i].process_id);
+    }
+    printf("\n");
+
+    // Print the time line
+    printf("%d", gantt[0].start_time);
+    for (int i = 0; i < gantt_count; i++)
+    {
+        printf("    %d", gantt[i].end_time);
+    }
+    printf("\n\n");
+}
+
+// Prints the final results, including a table and average times.
 
 void print_results(Process processes[], int n)
 {
@@ -188,7 +228,9 @@ void print_results(Process processes[], int n)
 int main()
 {
     Process processes[MAX_PROCESSES];
-    int n; // This will store the actual number of processes read from the file.
+    GanttEntry gantt[MAX_GANTT_ENTRIES];
+    int n;           
+    int gantt_count; 
 
     // Read the process data from the file
     n = read_processes_from_file("processes.txt", processes);
@@ -201,8 +243,9 @@ int main()
 
     printf("--- Shortest Job First (SJF) Scheduling ---\n");
 
-    sjf_(processes, n);
+    sjf_(processes, n, gantt, &gantt_count);
 
+    print_gantt_chart(gantt, gantt_count);
     print_results(processes, n);
 
     return 0;
