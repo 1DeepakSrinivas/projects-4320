@@ -69,7 +69,7 @@ int read_processes_from_file(const char *filename, Process processes[])
     fgets(buffer, sizeof(buffer), file);
 
     int count = 0;
-    int priority_; // A variable to read the priority value into, since we don't use it.
+    int priority_; // Read but not used in SJF
 
     // Read each process line from the file
     while (fscanf(file, "%d %d %d %d", &processes[count].id, &processes[count].arrival_time, &processes[count].burst_time, &priority_) == 4)
@@ -103,24 +103,18 @@ void sjf_(Process processes[], int n, GanttEntry gantt[], int *gantt_count)
     int completed_processes = 0;
     *gantt_count = 0;
 
-    // The main loop continues until all processes are completed.
+    // Schedule processes until all are done
     while (completed_processes < n)
     {
         int shortest_job_index = -1;
         int shortest_burst = INT_MAX;
 
-        // Find the uncompleted process that has arrived and has the shortest burst time.
+        // Find shortest job that's ready to run
         for (int i = 0; i < n; i++)
         {
             if (processes[i].arrival_time <= current_time && !processes[i].is_completed)
             {
-                // If this process has a shorter burst time than the current shortest select it.
-                if (processes[i].burst_time < shortest_burst)
-                {
-                    shortest_burst = processes[i].burst_time;
-                    shortest_job_index = i;
-                }
-                // If two processes have the same burst time, choose the one that arrived first.
+                // Select shorter burst time, break ties by arrival time
                 if (processes[i].burst_time < shortest_burst ||
                     (processes[i].burst_time == shortest_burst &&
                      processes[i].arrival_time < processes[shortest_job_index].arrival_time))
@@ -131,7 +125,7 @@ void sjf_(Process processes[], int n, GanttEntry gantt[], int *gantt_count)
             }
         }
 
-        // If a suitable process was found, execute it.
+        // Execute the selected process
         if (shortest_job_index != -1)
         {
             Process *p = &processes[shortest_job_index];
@@ -145,7 +139,7 @@ void sjf_(Process processes[], int n, GanttEntry gantt[], int *gantt_count)
             // Advance time by the burst time of the chosen process.
             current_time += p->burst_time;
 
-            // Calculate metrics for the completed process.
+            // Calculate final metrics
             p->completion_time = current_time;
             p->turnaround_time = p->completion_time - p->arrival_time;
             p->waiting_time = p->turnaround_time - p->burst_time;

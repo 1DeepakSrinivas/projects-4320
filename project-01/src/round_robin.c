@@ -30,7 +30,7 @@ typedef struct
     int burst_time;
     int remaining_time;
 
-    // Data calculated by round_robin
+    // Calculated scheduling metrics
     int completion_time;
     int turnaround_time;
     int waiting_time;
@@ -71,7 +71,7 @@ int read_processes_from_file(const char *filename, Process processes[])
     fgets(buffer, sizeof(buffer), file);
 
     int count = 0;
-    int priority_; // A variable to read the priority value into, since we don't use it.
+    int priority_; // Read but not used in RR
 
     // Read each process line from the file
     while (fscanf(file, "%d %d %d %d", &processes[count].id, &processes[count].arrival_time, &processes[count].burst_time, &priority_) == 4)
@@ -126,6 +126,7 @@ void round_robin(Process processes[], int n, GanttEntry gantt[], int *gantt_coun
             {
                 if (!processes[i].is_completed && processes[i].arrival_time > current_time)
                 {
+                    // Find next arriving process
                     if (next_arrival == -1 || processes[i].arrival_time < processes[next_arrival].arrival_time)
                     {
                         next_arrival = i;
@@ -245,8 +246,8 @@ int main()
 {
     Process processes[MAX_PROCESSES];
     GanttEntry gantt[MAX_GANTT_ENTRIES];
-    int n;           // This will store the actual number of processes read from the file.
-    int gantt_count; // Number of Gantt chart entries
+    int n; // Number of processes
+    int gantt_count; // Number of Gantt entries
 
     // Read the process data from the file
     n = read_processes_from_file("processes.txt", processes);
