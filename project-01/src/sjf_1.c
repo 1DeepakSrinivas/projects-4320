@@ -229,8 +229,8 @@ int main()
 {
     Process processes[MAX_PROCESSES];
     GanttEntry gantt[MAX_GANTT_ENTRIES];
-    int n;           
-    int gantt_count; 
+    int n;
+    int gantt_count;
 
     // Read the process data from the file
     n = read_processes_from_file("processes.txt", processes);
@@ -245,7 +245,7 @@ int main()
 
     sjf_(processes, n, gantt, &gantt_count);
 
-    print_gantt_chart(gantt, gantt_count);
+    gantt_chart(gantt, gantt_count);
     print_results(processes, n);
 
     return 0;

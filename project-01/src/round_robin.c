@@ -49,7 +49,7 @@ typedef struct
 // Function prototypes
 int read_processes_from_file(const char *filename, Process processes[]);
 void round_robin(Process processes[], int n, GanttEntry gantt[], int *gantt_count);
-void print_gantt_chart(GanttEntry gantt[], int gantt_count);
+void gantt_chart(GanttEntry gantt[], int gantt_count);
 void print_results(Process processes[], int n);
 
 /**
@@ -191,7 +191,7 @@ void round_robin(Process processes[], int n, GanttEntry gantt[], int *gantt_coun
 /**
  * Prints the Gantt chart showing process execution order
  */
-void print_gantt_chart(GanttEntry gantt[], int gantt_count)
+void gantt_chart(GanttEntry gantt[], int gantt_count)
 {
     printf("\nGantt Chart:\n");
 
@@ -261,7 +261,7 @@ int main()
 
     round_robin(processes, n, gantt, &gantt_count);
 
-    print_gantt_chart(gantt, gantt_count);
+    gantt_chart(gantt, gantt_count);
     print_results(processes, n);
 
     return 0;
