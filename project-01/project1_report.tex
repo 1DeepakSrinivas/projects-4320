@@ -1,0 +1,169 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{fancyvrb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{listings}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    frame=single,
+    breaklines=true,
+    showstringspaces=false,
+    backgroundcolor=\color{gray!10}
+}
+
+\title{
+    \textbf{CSC 4320 Operating Systems} \\
+    \large Project 01: Scheduling Algorithms
+}
+
+\author{Deepak Srinivas Govindarajan}
+\date{October 4, 2025}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\section{Introduction}
+
+This project implements and compares two CPU scheduling algorithms: Shortest Job First (SJF) and Round Robin (RR). I built a simulation that shows how each algorithm handles process execution, and calculated their waiting and turnaround times for comparison.\\
+\textbf{GitHub Repository:} \url{https://github.com/1DeepakSrinivas/projects-4320}
+
+\section{Algorithm Implementations}
+
+\subsection{Shortest Job First (SJF)}
+
+SJF is non-preemptive, i.e., once a process starts, it runs until completion. It always picks the process with the shortest burst time from those currently available. This approach minimizes average waiting time, which is desirable, but longer processes can get stale if shorter ones keep arriving. When burst times tie, a tie breaker was implemented to prefer the ones that arrived first.
+
+\subsection{Round Robin (RR)}
+
+Round Robin uses a time quantum of 3 units and preempts processes when their slice expires. It cycles through a ready queue, giving each process fair access to the CPU. No process waits longer than $(n-1) \times 3$ time units, which makes it good for interactive systems where responsiveness matters. Processes that don't finish in one quantum get re-queued for another turn.
+
+\section{Implementation}
+
+Both algorithms share the same C codebase with identical data structures, running on the same sample input \texttt{processes.txt} file. The process struct tracks ID, arrival time, burst time, and computed metrics. I wrote functions to generate Gantt charts, calculate performance statistics, and read process data from input files. A shell script (\texttt{main.sh}) ties everything together with an interactive menu for running either algorithm individually or both for comparison.
+
+\section{How to Run}
+\paragraph{Prerequisites:}\textbf{GCC, Git} \\
+\newline
+\textbf{Run the following commands:}
+\begin{lstlisting}
+git clone https://github.com/1DeepakSrinivas/projects-4320.git
+cd project-01/src
+chmod +x main.sh
+./main.sh
+\end{lstlisting}
+\section{Results}
+
+\subsection{Test Data}
+
+I tested with 10 processes having various arrival and burst times:
+
+\begin{verbatim}
+PID  Arrival_Time  Burst_Time  Priority
+1    0            5           2
+2    2            3           1
+3    4            2           3
+4    5            4           2
+5    6            6           1
+6    8            3           4
+7    10           5           2
+8    12           2           3
+9    13           4           1
+10   15           3           2
+\end{verbatim}
+
+\subsection{SJF Output}
+
+\begin{verbatim}
+Gantt Chart:
+| P1 | P3 | P2 | P6 | P8 | P10 | P4 | P9 | P7 | P5 |
+0    5    7    10    13    15    18    22    26    31    37
+
+Final Process Statistics:
+PID     Arrival Time    Burst Time      Waiting Time    Turnaround Time
+1       0               5               0               5
+2       2               3               5               8
+3       4               2               1               3
+4       5               4               13              17
+5       6               6               25              31
+6       8               3               2               5
+7       10              5               16              21
+8       12              2               1               3
+9       13              4               9               13
+10      15              3               0               3
+
+Average Waiting Time:    7.20
+Average Turnaround Time: 10.90
+\end{verbatim}
+
+\subsection{Round Robin Output}
+
+\begin{verbatim}
+Gantt Chart:
+| P1 | P2 | P1 | P3 | P4 | P5 | P6 | P7 | P8 | P9 | P4 |
+0    3    6    8    10   13   16   19   22   24   27   28
+
+| P10 | P5 | P7 | P9 |
+28    31   34   36   37
+    
+Final Process Statistics:
+PID  Arrival  Burst  Waiting  Turnaround
+1    0        5      3        8
+2    2        3      1        4
+3    4        2      4        6
+4    5        4      19       23
+5    6        6      22       28
+6    8        3      8        11
+7    10       5      21       26
+8    12       2      10       12
+9    13       4      20       24
+10   15       3      13       16
+
+Average Waiting Time:    12.10
+Average Turnaround Time: 15.80
+\end{verbatim}
+
+\subsection{Comparison}
+
+\begin{verbatim}
+Comparison Results
+
+Average Wait Times:
+Round Robin:
+12.10
+SJF:
+7.20
+
+Average Turnaround Times:
+Round Robin:
+15.80
+SJF:
+10.90
+SJF has a lower average wait time.
+\end{verbatim}
+
+\section{Analysis}
+
+SJF usually achieves better average waiting times because it's mathematically optimal for this metric. However, it's not great for real systems—it needs to know burst times ahead of time (which rarely happens), doesn't preempt (bad for interactive tasks), and can starve long processes.
+
+Round Robin sacrifices some efficiency for fairness. It doesn't need any advance knowledge about processes and guarantees everyone gets CPU time regularly. The downside is more context switches, which would add overhead in a real OS. For time-sharing systems where users expect quick responses, RR makes more sense despite not being optimal on paper.
+
+\section{Challenges}
+
+The most significant difficulty I encountered was managing the queue in the Round Robin algorithm. Even minor errors in handling the indices could result in processes being lost or the entire schedule becoming corrupted. My limited familiarity with pure CLI environments (WSL, Vim)- driven by a personal choice to only make use of the terminal- had me navigating trivial challenges often taken for granted in the modern day.
+
+Developing the bash script also presented challenges. I found myself frequently relying on external resources (stackoverflow) to understand correct syntax for loops, functions, and argument passing.
+
+\section{Conclusion}
+This project demonstrates the tradeoffs between optimal and practical scheduling. SJF wins on average waiting time, but it isn't realistic for most scenarios. Round Robin gives up some efficiency but works in the real world and treats processes fairly.
+
+The modular design makes it straightforward to add other algorithms later. Priority scheduling, multilevel queues, or something resembling a modern scheduler. Future work could include aging mechanisms for SJF to prevent starvation, dynamic quantum adjustment for RR, or simulating context switch overhead for more realistic comparisons.
+
+\end{document}
