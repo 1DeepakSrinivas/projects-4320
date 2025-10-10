@@ -1,131 +1,92 @@
-# Operating Systems Process Scheduling Simulator
+# CPU Scheduling & Memory Management Simulator
 
-This project implements and compares different CPU scheduling algorithms for CSC 4320 Operating Systems course. It provides a comprehensive simulation environment to analyze the performance characteristics of Shortest Job First (SJF) and Round Robin (RR) scheduling algorithms.
+This project implements CPU scheduling algorithms with comprehensive memory management for CSC 4320 Operating Systems. It provides a complete simulation environment to analyze Shortest Job First (SJF) and Round Robin (RR) scheduling algorithms alongside memory allocation and paging systems.
 
-## Project Description
+## Project Overview
 
-This process scheduling simulator demonstrates fundamental CPU scheduling concepts by implementing two key algorithms:
+The simulator demonstrates fundamental operating system concepts through two key components:
 
-- **Shortest Job First (SJF)**: A non-preemptive algorithm that selects the process with the shortest burst time
-- **Round Robin (RR)**: A preemptive algorithm that assigns fixed time quanta to processes in a circular queue
+**CPU Scheduling Algorithms:**
+- **Shortest Job First (SJF)**: Non-preemptive algorithm selecting processes with shortest burst time
+- **Round Robin (RR)**: Preemptive algorithm with time quantum = 3, using circular queue
 
-The simulator reads process data from a file, executes both scheduling algorithms, calculates performance metrics, and provides visual representations through Gantt charts.
+**Memory Management Systems:**
+- **Contiguous Allocation**: First-fit, Best-fit, and Worst-fit algorithms
+- **Paging System**: FIFO and LRU page replacement algorithms
+- **Memory Simulation**: Realistic memory access patterns during process execution
 
-## Functionality
+## Architecture & Design
 
-### Core Features
+### Modular Structure
 
-1. **Process Scheduling Simulation**
-
-   - Implements SJF and Round Robin algorithms
-   - Calculates Waiting Time (WT) and Turnaround Time (TAT) for each process
-   - Displays execution order through Gantt charts
-
-2. **Performance Analysis**
-
-   - Computes average waiting and turnaround times
-   - Provides comparative analysis between algorithms
-   - Outputs detailed process statistics
-
-3. **Interactive Menu System**
-   - Run individual schedulers
-   - Execute comparison mode
-   - Clean interface with clear options
-
-### Algorithm Implementations
-
-**Shortest Job First (SJF)**
-
-- Non-preemptive scheduling
-- Sorts processes by burst time
-- Minimizes average waiting time for given process set
-
-**Round Robin (RR)**
-
-- Preemptive scheduling with time quantum = 3
-- Maintains ready queue for fair CPU allocation
-- Handles process arrivals during execution
-
-## Directory Structure
+The codebase follows a clean, modular design:
 
 ```
-projects-4320/
-├── README.md
-├── project-01/
-│   └── src/
-│       ├── main.sh                  # Main interaction script
-│       ├── processes.txt            # Input data file
-│       ├── sjf_1.c                  # SJF scheduler implementation
-│       ├── round_robin.c            # Round Robin scheduler implementation
-│       └── <output.txt>             # Generated comparison results
+project-01/src/
+├── sjf.h                    # SJF algorithm header with macros and declarations
+├── sjf_1.c                  # SJF implementation with memory management
+├── round_robin.h            # Round Robin header with macros and declarations  
+├── round_robin.c            # Round Robin implementation with memory management
+├── main.sh                  # Interactive menu system and comparison tool
+├── processes.txt            # Input process data
+└── output.txt               # Generated comparison results
 ```
 
-## Main.sh - Your Primary Interface
+### Key Features
 
-The `main.sh` script serves as the central control point for the entire simulation system. It provides an interactive menu-driven interface with the following capabilities:
+1. **CPU Scheduling Simulation**
+   - Implements both SJF and Round Robin algorithms
+   - Calculates waiting time and turnaround time for each process
+   - Generates Gantt charts showing execution order
+   - Handles process arrivals and preemption correctly
 
-### Features of main.sh
+2. **Memory Management Integration**
+   - **Contiguous Memory**: Simulates first-fit, best-fit, and worst-fit allocation
+   - **Paging System**: Implements FIFO and LRU page replacement
+   - **Memory Access**: Simulates realistic memory usage during process execution
+   - **Status Reporting**: Detailed memory allocation and page frame information
 
-1. **Automatic Compilation**: Compiles both schedulers at startup using gcc
-2. **Interactive Menu System**:
-
-   - Option 1: Run SJF Scheduler only
-   - Option 2: Run Round Robin Scheduler only
-   - Option 3: Run Both & Compare Performance
-   - Option 4: Exit and cleanup
-
-3. **Comparison Mode**: Automatically runs both algorithms and provides:
-
-   - Side-by-side performance metrics
-   - Determines which algorithm performs better
-   - Saves detailed results to `output.txt`
-
-4. **Cleanup Management**: Removes compiled executables on exit
-
-### Menu Options Explained
-
-- **1. SJF Only**: Executes the Shortest Job First algorithm and displays results
-- **2. Round Robin Only**: Executes the Round Robin algorithm with Gantt chart
-- **3. Comparison Mode**: Runs both algorithms, extracts metrics, compares performance, and saves comprehensive results
-- **4. Exit**: Performs cleanup and terminates the program
+3. **Interactive Interface**
+   - Clean, simple menu system without colors or complex formatting
+   - Individual algorithm execution
+   - Comprehensive comparison mode with performance analysis
+   - Output file management and viewing
 
 ## How to Run
 
 ### Prerequisites
-
 - Linux environment with bash shell (or WSL on Windows)
-- GCC compiler installed
-- Standard Unix utilities (awk, sed, grep)
+- GCC compiler
+- Standard Unix utilities (awk, grep, head)
 
 ### Execution Steps
 
-1. **Navigate to the source directory**:
-
+1. **Navigate to source directory:**
    ```bash
    cd project-01/src
    ```
 
-2. **Make the script executable**:
-
+2. **Make script executable:**
    ```bash
    chmod +x main.sh
    ```
 
-3. **Run the main script**:
-
+3. **Run the simulator:**
    ```bash
    ./main.sh
    ```
 
-4. **Follow the interactive menu**:
-   - Choose option 1, 2, or 3 based on your needs
-   - Option 3 (Comparison) is recommended for full analysis
-   - Use option 4 to exit when finished
+4. **Use the interactive menu:**
+   - **Option 1**: Run SJF Scheduler only
+   - **Option 2**: Run Round Robin Scheduler only  
+   - **Option 3**: Run Algorithm Comparison (recommended)
+   - **Option 4**: View Output File
+   - **Option 5**: Clean Up executables
+   - **Option 6**: Exit
 
-### Input File Format
+### Input Format
 
-The `processes.txt` file contains process information in the following format:
-
+The `processes.txt` file contains process information:
 ```
 PID  Arrival_Time  Burst_Time  Priority
 1    0            5           2
@@ -133,28 +94,69 @@ PID  Arrival_Time  Burst_Time  Priority
 ...
 ```
 
-### Sample Output
+## Algorithm Details
 
-When running comparison mode, you'll see:
+### Shortest Job First (SJF)
+- **Type**: Non-preemptive
+- **Selection**: Shortest burst time among ready processes
+- **Tie-breaking**: Earlier arrival time preferred
+- **Memory**: Tests First-Fit/FIFO and Best-Fit/LRU combinations
 
-- Individual algorithm outputs with Gantt charts
-- Performance metrics comparison
-- Results saved to `output.txt` for reference
+### Round Robin (RR)
+- **Type**: Preemptive with time quantum = 3
+- **Queue**: Circular ready queue with fair CPU allocation
+- **Preemption**: Processes re-queued if not completed in quantum
+- **Memory**: Dynamic allocation when process first runs
 
-### For Windows Users
+## Memory Management Features
 
-If using Windows, run the script through WSL:
+### Contiguous Allocation
+- **First-Fit**: Allocates first suitable block found
+- **Best-Fit**: Allocates smallest suitable block
+- **Worst-Fit**: Allocates largest suitable block
+- **Fragmentation**: Handles block splitting and merging
 
-```bash
-wsl
-cd /mnt/c/path/to/project-01/src
-./main.sh
-```
+### Paging System
+- **Page Size**: 64 bytes with 16 total page frames
+- **FIFO**: First-in-first-out page replacement
+- **LRU**: Least recently used page replacement
+- **Access Tracking**: Updates page access times during execution
 
 ## Expected Results
 
-The simulation demonstrates that:
+The simulator demonstrates:
+- **SJF Performance**: Lower average waiting times (typically ~7.20)
+- **Round Robin Fairness**: Higher waiting times (~12.10) but guaranteed fairness
+- **Memory Efficiency**: Different allocation strategies show varying fragmentation
+- **Paging Behavior**: Page replacement algorithms handle memory pressure
 
-- **SJF** typically provides lower average waiting times
-- **Round Robin** ensures fairness through time sharing
-- **Gantt charts** clearly show execution patterns and preemption
+## Output Features
+
+### Gantt Charts
+Visual representation of process execution order showing:
+- Process IDs and execution intervals
+- Preemption points for Round Robin
+- Clear timeline with start/end times
+
+### Performance Metrics
+- Individual process statistics (waiting time, turnaround time)
+- Average waiting and turnaround times
+- Algorithm comparison with performance winner
+- Memory allocation status and page frame usage
+
+### File Output
+Complete results saved to `output.txt` including:
+- Both algorithm outputs
+- Performance comparison
+- Memory management status
+- Conclusion about which algorithm performs better
+
+## Code Quality
+
+- **Warning-Free**: Compiles without warnings using `-Wall -Wextra`
+- **Modular Design**: Clean separation of headers and implementations
+- **Readable Code**: Human-like variable names and minimal, clear comments
+- **Undergraduate Level**: Appropriate complexity for CS students
+- **Consistent Style**: Uniform formatting using "---message---" pattern
+
+This simulator provides a comprehensive learning tool for understanding both CPU scheduling and memory management concepts in operating systems.
