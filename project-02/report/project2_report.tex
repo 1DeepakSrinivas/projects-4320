@@ -1,0 +1,100 @@
+\documentclass[12pt]{article}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{fancyvrb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{multicol}
+
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    frame=single,
+    breaklines=true,
+    showstringspaces=false,
+    backgroundcolor=\color{gray!10}
+}
+
+\title{
+    \textbf{CSC 4320 Operating Systems} \\
+    \large Project 02: Readers Writers Synchronization Problem
+}
+å
+\author{Deepak Srinivas Govindarajan}
+\date{November 15, 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+This project implements the Readers Writers synchronization problem using POSIX threads. The design supports concurrent reading, exclusive writing, and limits writer starvation.\\
+\textbf{Repository:} \url{https://github.com/1DeepakSrinivas/projects-4320}
+
+\section{Implementation Details}
+
+\subsection{Synchronization Primitives}
+
+\textbf{Locks and Condition Variable:}
+\begin{itemize}
+    \item \texttt{count\_mutex}: protects reader counter \texttt{r\_count}.
+    \item \texttt{mutex}: ensures exclusive writer access.
+    \item \texttt{w\_cond}: coordinates waiting writers.
+\end{itemize}
+
+\textbf{Shared State:}
+\begin{itemize}
+    \item \texttt{shared\_data}: integer critical section value.
+    \item \texttt{r\_count}: number of active readers.
+    \item \texttt{w\_waiting}: number of writers queued.
+\end{itemize}
+
+\subsection{Algorithm Design}
+
+Readers increment \texttt{r\_count} under \texttt{count\_mutex}. The first reader locks \texttt{mutex}, blocking writers. Subsequent readers enter concurrently. The last reader unlocks \texttt{mutex} and signals waiting writers.
+
+Writers increment \texttt{w\_waiting}, then wait on \texttt{w\_cond} until \texttt{r\_count == 0}. Once admitted, a writer locks \texttt{mutex}, updates \texttt{shared\_data}, finishes, and signals waiting threads.
+
+This enforces concurrent reads, exclusive writes, and limits writer starvation.
+
+\subsection{Thread Configuration}
+
+\begin{itemize}
+    \item \texttt{NUM\_READERS = 5}
+    \item \texttt{NUM\_WRITERS = 3}
+    \item Reading time: 2 s
+    \item Writing time: 3 s
+\end{itemize}
+
+Readers perform three read cycles. Writers perform two write cycles. Thread arguments include thread ID and type.
+
+\subsection{Code Architecture}
+
+The file \texttt{readers\_writers.c} implements:
+\begin{itemize}
+    \item \texttt{start\_read()}, \texttt{end\_read()}
+    \item \texttt{start\_write()}, \texttt{end\_write()}
+    \item \texttt{reader()} and \texttt{writer()} thread routines
+\end{itemize}
+
+The main control function creates and joins all threads, then destroys all synchronization primitives.
+
+\section{Results}
+
+\textbf{Concurrent Reading:} Multiple readers access \texttt{shared\_data} simultaneously. Logs confirm identical values for overlapping read intervals.
+
+\textbf{Exclusive Writing:} Writers obtain exclusive access using \texttt{mutex}. Readers pause until writer completion. \texttt{shared\_data} increments sequentially with no race conditions.
+
+\textbf{Lock Coordination:} Logs include thread creation, waiting, acquisition, critical section activity, and lock release. Execution shows no deadlocks or starvation.
+
+\section{Files}
+
+\texttt{output.txt} and \texttt{processes.txt} are included in \texttt{project-02/src}.
+
+\section{Conclusion}
+
+The project demonstrates proper synchronization for the Readers Writers problem using pthread mutexes and condition variables. The modular structure supports concurrent reads, exclusive writes, and fairness for writers.
+
+\end{document}
