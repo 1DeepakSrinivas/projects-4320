@@ -27,19 +27,27 @@ static int r_count = 0;
 static int w_waiting = 0;
 static pthread_cond_t w_cond = PTHREAD_COND_INITIALIZER;
 
+// Shared data variable to simulate the critical section
+static int shared_data = 0;
+
 // Reader thread
 void* reader(void* arg) {
     rw_thread_arg_t *args = (rw_thread_arg_t*)arg; // cast the argument to a rw_thread_arg_t pointer
     int id = args->id; // get the id of the reader
     
+    printf("[Reader %d] Start\n", id);
+    
     for (int i = 0; i < 3; i++) {
+        printf("[Reader %d] Waiting to acquire lock\n", id);
         start_read();
+        printf("[Reader %d] Acquired lock\n", id);
         
-        printf("[Reader %d] Reading\n", id); // print the reader id and reading message
+        printf("[Reader %d] Reading (shared_data = %d)\n", id, shared_data); // print the reader id and reading message
         sleep(READING_TIME);
-        printf("[Reader %d] Finished reading.\n", id); // print the reader id and finished reading message
         
+        printf("[Reader %d] Release lock\n", id);
         end_read();
+        printf("[Reader %d] Finished reading\n", id); // print the reader id and finished reading message
         
         // pause before next read
         sleep(1);
@@ -53,14 +61,20 @@ void* writer(void* arg) {
     rw_thread_arg_t *args = (rw_thread_arg_t*)arg; // cast the argument to a rw_thread_arg_t pointer
     int id = args->id; // get the id of the writer
     
+    printf("[Writer %d] Start\n", id);
+    
     for (int i = 0; i < 2; i++) { 
+        printf("[Writer %d] Waiting to acquire lock\n", id);
         start_write();
+        printf("[Writer %d] Acquired lock\n", id);
         
-        printf("[Writer %d] Writing.\n", id);
+        shared_data++; // Modify shared data
+        printf("[Writer %d] Writing (shared_data = %d)\n", id, shared_data);
         sleep(WRITING_TIME);
-        printf("[Writer %d] Finished writing.\n", id);
         
+        printf("[Writer %d] Release lock\n", id);
         end_write();
+        printf("[Writer %d] Finished writing\n", id);
         
         // pause before next write
         sleep(1);
@@ -134,6 +148,7 @@ void readers_writers(void) {
             perror("Reader thread creation failed"); 
             exit(1);
         }
+        printf("Created Reader thread %d\n", i);
     }
     
     // Create writer threads
@@ -144,6 +159,7 @@ void readers_writers(void) {
             perror("Writer thread creation failed");
             exit(1);
         }
+        printf("Created Writer thread %d\n", i);
     }
     
     // Wait for all readers to complete
@@ -161,6 +177,11 @@ void readers_writers(void) {
             exit(1);
         }
     }
+    
+    // Clean up synchronization primitives to prevent memory leaks
+    pthread_mutex_destroy(&mutex);
+    pthread_mutex_destroy(&count_mutex);
+    pthread_cond_destroy(&w_cond);
     
     printf("Execution completed\n");
 }
